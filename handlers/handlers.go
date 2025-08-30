@@ -18,14 +18,14 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 
 // POST /article のハンドラ
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
-	article := models.Article1
-	jsonData, err := json.Marshal(article)
-	if err != nil {
-		http.Error(w, "fail to encode json\n", http.StatusInternalServerError)
-		return
+
+	var reqArticle models.Article
+	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
 	}
 
-	w.Write(jsonData)
+	article := reqArticle
+	json.NewEncoder(w).Encode(article)
 }
 
 // GET /article/list のハンドラ
