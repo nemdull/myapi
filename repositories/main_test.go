@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"os/exec"
+	"strings"
 	"testing"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var testDB *sql.DB
@@ -27,35 +29,37 @@ func connectDB() error {
 }
 
 func setupTestData() error {
-	file, err := os.Open("./testdata/setupDB.sql")
+	content, err := os.ReadFile("./testdata/setupDB.sql")
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	cmd := exec.Command("mysql", "-h", "127.0.0.1", "-P", "3307", "-u", "docker", "sampledb", "--password=docker")
-	cmd.Stdin = file
-
-	err = cmd.Run()
-	if err != nil {
-		return err
+	statements := strings.Split(string(content), ";")
+	for _, stmt := range statements {
+		if strings.TrimSpace(stmt) == "" {
+			continue
+		}
+		_, err := testDB.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute statement: %s\nError: %w", stmt, err)
+		}
 	}
 	return nil
 }
 
 func cleanupDB() error {
-	file, err := os.Open("./testdata/cleanupDB.sql")
+	content, err := os.ReadFile("./testdata/cleanupDB.sql")
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	cmd := exec.Command("mysql", "-h", "127.0.0.1", "-P", "3307", "-u", "docker", "sampledb", "--password=docker")
-	cmd.Stdin = file
-
-	err = cmd.Run()
-	if err != nil {
-		return err
+	statements := strings.Split(string(content), ";")
+	for _, stmt := range statements {
+		if strings.TrimSpace(stmt) == "" {
+			continue
+		}
+		_, err := testDB.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute statement: %s\nError: %w", stmt, err)
+		}
 	}
 	return nil
 }
@@ -85,6 +89,7 @@ func teardown() {
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
