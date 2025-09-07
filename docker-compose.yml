@@ -17,7 +17,7 @@ services:
         MYSQL_PASSWORD: ${USERPASS}
         TZ: 'Asia/Tokyo'
     ports: 
-        - "3306:3306"
+        - "3307:3306"
     volumes:
         - db-volume:/var/lib/mysql
 
