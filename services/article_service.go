@@ -9,15 +9,9 @@ import (
 
 // PostArticleHandlerで使うことを想定したサービス
 // 引数の情報をもとに新しい記事を作り、結果を返却
-func PostArticleService(article models.Article) (models.Article, error) {
-	db, err := connectDB()
-	if err != nil {
-		log.Printf("fail to connect DB: %v", err)
-		return models.Article{}, err
-	}
-	defer db.Close()
+func (s *MyAppService) PostArticleService(article models.Article) (models.Article, error) {
+	newArticle, err := repositories.InsertArticle(s.DB, article)
 
-	newArticle, err := repositories.InsertArticle(db, article)
 	if err != nil {
 		log.Printf("fail to insert article: %v", err)
 		return models.Article{}, err
@@ -27,14 +21,9 @@ func PostArticleService(article models.Article) (models.Article, error) {
 
 // ArticleListHandlerで使うことを想定したサービス
 // 指定pageの記事一覧を返却
-func GetArticleListService(page int) ([]models.Article, error) {
-	db, err := connectDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
+func (s *MyAppService) GetArticleListService(page int) ([]models.Article, error) {
+	articleList, err := repositories.SelectArticleList(s.DB, page)
 
-	articleList, err := repositories.SelectArticleList(db, page)
 	if err != nil {
 		return nil, err
 	}
@@ -44,18 +33,14 @@ func GetArticleListService(page int) ([]models.Article, error) {
 
 // ArticleDetailHandlerで使うことを想定したサービス
 // 指定IDの記事情報を返却
-func GetArticleService(articleID int) (models.Article, error) {
-	db, err := connectDB()
-	if err != nil {
-		return models.Article{}, err
-	}
-	defer db.Close()
+func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) {
+	article, err := repositories.SelectArticleDetail(s.DB, articleID)
 
-	article, err := repositories.SelectArticleDetail(db, articleID)
 	if err != nil {
 		return models.Article{}, err
 	}
-	commentList, err := repositories.SelectCommentList(db, articleID)
+
+	commentList, err := repositories.SelectCommentList(s.DB, articleID)
 	if err != nil {
 		return models.Article{}, err
 	}
@@ -67,14 +52,9 @@ func GetArticleService(articleID int) (models.Article, error) {
 
 // PostNiceHandlerで使うことを想定したサービス
 // 指定IDの記事のいいね数を+1して、結果を返却
-func PostNiceService(article models.Article) (models.Article, error) {
-	db, err := connectDB()
-	if err != nil {
-		return models.Article{}, err
-	}
-	defer db.Close()
+func (s *MyAppService) PostNiceService(article models.Article) (models.Article, error) {
+	err := repositories.UpdateNiceNum(s.DB, article.ID)
 
-	err = repositories.UpdateNiceNum(db, article.ID)
 	if err != nil {
 		return models.Article{}, err
 	}
