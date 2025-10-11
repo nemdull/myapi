@@ -1,8 +1,10 @@
 package services
 
 import (
-	"log"
+	"database/sql"
+	"errors"
 
+	"github.com/nemdull/myapi/apperrors"
 	"github.com/nemdull/myapi/models"
 	"github.com/nemdull/myapi/repositories"
 )
@@ -13,7 +15,7 @@ func (s *MyAppService) PostArticleService(article models.Article) (models.Articl
 	newArticle, err := repositories.InsertArticle(s.DB, article)
 
 	if err != nil {
-		log.Printf("fail to insert article: %v", err)
+		err = apperrors.InsertDataFailed.Wrap(err, "fail to insert article")
 		return models.Article{}, err
 	}
 	return newArticle, nil
@@ -25,6 +27,12 @@ func (s *MyAppService) GetArticleListService(page int) ([]models.Article, error)
 	articleList, err := repositories.SelectArticleList(s.DB, page)
 
 	if err != nil {
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get article list")
+		return nil, err
+	}
+
+	if len(articleList) == 0 {
+		err := apperrors.NAData.Wrap(ErrNoData, "no article")
 		return nil, err
 	}
 
@@ -37,11 +45,17 @@ func (s *MyAppService) GetArticleService(articleID int) (models.Article, error) 
 	article, err := repositories.SelectArticleDetail(s.DB, articleID)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = apperrors.NAData.Wrap(err, "no article")
+			return models.Article{}, err
+		}
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get article detail")
 		return models.Article{}, err
 	}
 
 	commentList, err := repositories.SelectCommentList(s.DB, articleID)
 	if err != nil {
+		err = apperrors.GetDataFailed.Wrap(err, "fail to get comment list")
 		return models.Article{}, err
 	}
 
@@ -56,6 +70,11 @@ func (s *MyAppService) PostNiceService(article models.Article) (models.Article, 
 	err := repositories.UpdateNiceNum(s.DB, article.ID)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = apperrors.NoTargetData.Wrap(err, "no target article")
+			return models.Article{}, err
+		}
+		err = apperrors.UpdateDataFailed.Wrap(err, "fail to update nice num")
 		return models.Article{}, err
 	}
 

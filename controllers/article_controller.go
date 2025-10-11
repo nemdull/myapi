@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/nemdull/myapi/apperrors"
 	"github.com/nemdull/myapi/controllers/services"
 	"github.com/nemdull/myapi/models"
 )
@@ -29,13 +30,14 @@ func (c *ArticleController) HelloHandler(w http.ResponseWriter, req *http.Reques
 func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
-		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "failed to decode request body")
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
 	article, err := c.service.PostArticleService(reqArticle)
 	if err != nil {
-		http.Error(w, "fail to post article\n", http.StatusInternalServerError)
+		apperrors.ErrorHandler(w, req, err)
 		return
 	}
 
@@ -51,6 +53,7 @@ func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.
 		var err error
 		page, err = strconv.Atoi(p[0])
 		if err != nil {
+			err = apperrors.BadParams.Wrap(err, "invalid page parameter")
 			http.Error(w, "Invalid query parameter", http.StatusBadRequest)
 			return
 		}
