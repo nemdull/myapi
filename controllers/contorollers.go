@@ -32,6 +32,7 @@ func (c *MyAppController) PostArticleHandler(w http.ResponseWriter, req *http.Re
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		return
 	}
 
 	article, err := c.services.PostArticleService(reqArticle)
@@ -41,6 +42,7 @@ func (c *MyAppController) PostArticleHandler(w http.ResponseWriter, req *http.Re
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(article)
 }
 
@@ -63,10 +65,12 @@ func (c *MyAppController) ArticleListHandler(w http.ResponseWriter, req *http.Re
 
 	articleList, err := c.services.GetArticleListService(page)
 	if err != nil {
+		log.Printf("fail in GetArticleListService: %v", err)
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(articleList)
 }
 
@@ -80,10 +84,12 @@ func (c *MyAppController) ArticleDetailHandler(w http.ResponseWriter, req *http.
 
 	article, err := c.services.GetArticleService(articleID)
 	if err != nil {
+		log.Printf("fail in GetArticleService: %v", err)
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(article)
 }
 
@@ -92,14 +98,17 @@ func (c *MyAppController) PostNiceHandler(w http.ResponseWriter, req *http.Reque
 	var reqArticle models.Article
 	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		return
 	}
 
 	article, err := c.services.PostNiceService(reqArticle)
 	if err != nil {
+		log.Printf("fail in PostNiceService: %v", err)
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(article)
 }
 
@@ -108,12 +117,15 @@ func (c *MyAppController) PostCommentHandler(w http.ResponseWriter, req *http.Re
 	var reqComment models.Comment
 	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
 		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+		return
 	}
 
 	comment, err := c.services.PostCommentService(reqComment)
 	if err != nil {
+		log.Printf("fail in PostCommentService: %v", err)
 		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comment)
 }

@@ -74,15 +74,19 @@ Go + Gorilla Mux による記事投稿・一覧・詳細表示・いいね機能
 - ローカル実行
   1. 依存関係の取得
      - go mod download
-  2. アプリの起動
+  2. DB を起動
+     - docker compose up -d mysql
+     - ホスト側ポートは 3307、ユーザーは docker / docker、DB 名は sampledb（main.go がデフォルト値として利用）
+  3. アプリの起動
      - go run main.go
+     - 初回起動時に DB テーブルが自動作成される
      - ブラウザ/curl で http://localhost:8080 へアクセス
-  3. テストの実行
+  4. テストの実行
      - go test ./...
 
 - Docker Compose を利用する場合
   - DB 環境とアプリを一括で起動
-    - docker-compose up -d
+    - docker compose up -d mysql
   - DB の準備/初期化は testdata/setupDB.sql などのスクリプトを参照
   - アプリはデフォルトで port 8080 をリスニング
 
@@ -108,8 +112,7 @@ Go + Gorilla Mux による記事投稿・一覧・詳細表示・いいね機能
   - 現状のエンドポイントに対するユニットテスト/統合テストを追加
   - 例: PostArticleHandler のデコードエラーパスのテスト、GetArticleList のページ境界テスト、ArticleDetail の不正 ID のテスト
 - エラーハンドリング
-  - PostArticleHandler で JSON デコード失敗時に早期リターンを追加して、本来の処理を止めるべき
-  - 具体的には decode エラー時に return を追加
+  - PostCommentHandler や他ハンドラの正常/異常レスポンスを網羅的にテストへ落とし込む
 - 設計の安定性
   - article.CommentList のマージ処理の意図を明示化（空配列初期化・append の正確性）
   - DB 接続の再利用/接続プールの活用検討
