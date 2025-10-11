@@ -8,15 +8,15 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/nemdull/myapi/controllers/services"
 	"github.com/nemdull/myapi/models"
-	"github.com/nemdull/myapi/services"
 )
 
 type MyAppController struct {
-	services *services.MyAppService
+	services services.MyAppServicer
 }
 
-func NewMyAppController(s *services.MyAppService) *MyAppController {
+func NewMyAppController(s services.MyAppServicer) *MyAppController {
 	return &MyAppController{
 		services: s,
 	}
