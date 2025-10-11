@@ -9,9 +9,7 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/nemdull/myapi/controllers"
-	"github.com/nemdull/myapi/routers"
-	"github.com/nemdull/myapi/services"
+	"github.com/nemdull/myapi/api"
 	// mysql driver
 )
 
@@ -42,8 +40,7 @@ func main() {
 		return
 	}
 
-	con := controllers.NewMyAppController(services.NewMyAppService(db))
-	r := routers.NewRouter(con)
+	r := api.NewRouter(db)
 
 	log.Println("server start at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
